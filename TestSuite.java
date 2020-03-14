@@ -11,4 +11,6 @@ import org.junit.runners.Suite;
 @SelectPackages("examples1")
 public class TestSuite {
   //nothing
+
+System.out.println("This is a new LIne");
 }
