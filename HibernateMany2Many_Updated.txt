@@ -1,0 +1,215 @@
+import java.util.Set;
+
+public class Cart {
+
+	private long id;
+	private double total;
+
+	private Set<Item> items;
+	
+	public double getTotal() {
+		return total;
+	}
+
+	public void setTotal(double total) {
+		this.total = total;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public Set<Item> getItems() {
+		return items;
+	}
+
+	public void setItems(Set<Item> items) {
+		this.items = items;
+	}
+
+}
+
+
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="model">
+	<class name="Cart" table="CART">
+		<id name="id" type="long">
+			<column name="cart_id" />
+			<generator class="identity" />
+		</id>
+		<property name="total" type="double" column="cart_total" />
+
+		<set name="items" table="CART_ITEMS" fetch="select" cascade="all">
+			<key column="cart_id" />
+			<many-to-many class="Item" column="item_id" />
+		</set>
+	</class>
+
+</hibernate-mapping>
+
+
+
+import java.util.Set;
+
+public class Item {
+
+	private long id;
+	private double price;
+	private String description;
+
+	private Set<Cart> carts;
+	
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public double getPrice() {
+		return price;
+	}
+
+	public void setPrice(double price) {
+		this.price = price;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Set<Cart> getCarts() {
+		return carts;
+	}
+
+	public void setCarts(Set<Cart> carts) {
+		this.carts = carts;
+	}
+}
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+"http://hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="model">
+
+	<class name="Item" table="ITEM">
+		<id name="id" type="long">
+			<column name="item_id" />
+			<generator class="identity" />
+		</id>
+		<property name="description" type="string" column="item_desc" />
+
+		<property name="price" type="double" column="item_price" />
+
+		<set name="carts" table="CART_ITEMS" fetch="select" cascade="all">
+			<key column="item_id" />
+			<many-to-many class="Cart" column="cart_id" />
+		</set>
+
+	</class>
+
+</hibernate-mapping>
+
+
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+		"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+		"https://hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+       <property name="hbm2ddl.auto">update</property>  
+        <property name="dialect">org.hibernate.dialect.MySQL8Dialect</property>  
+        <property name="connection.url">jdbc:mysql://localhost:3306/cts</property>  
+        <property name="connection.username">root</property>  
+        <property name="connection.password">root</property>  
+        <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property> 
+        <mapping resource="cart.hbm.xml"/>
+        <mapping resource="items.hbm.xml"/>
+    </session-factory>
+</hibernate-configuration>
+
+
+
+
+
+
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+
+import com.journaldev.hibernate.model.Cart;
+import com.journaldev.hibernate.model.Item;
+import com.journaldev.hibernate.util.HibernateUtil;
+
+public class HibernateManyToManyMain {
+	
+	//Saving many-to-many where Cart is primary
+	public static void main(String[] args) {
+		
+		Item iphone = new Item();
+		iphone.setPrice(100); iphone.setDescription("iPhone");
+		
+		Item ipod = new Item();
+		ipod.setPrice(50); ipod.setDescription("iPod");
+		
+		Set<Item> items = new HashSet<Item>();
+		items.add(iphone); items.add(ipod);
+		
+		Cart cart = new Cart();
+		cart.setItems(items);
+		cart.setTotal(150);
+		
+		Cart cart1 = new Cart();
+		Set<Item> items1 = new HashSet<Item>();
+		items1.add(iphone);
+		cart1.setItems(items1);
+		cart1.setTotal(100);
+		
+		SessionFactory sessionFactory = null;
+		try{
+		sessionFactory = HibernateUtil.getSessionFactory();
+		Session session = sessionFactory.getCurrentSession();
+		Transaction tx = session.beginTransaction();
+		session.save(cart);
+		session.save(cart1);
+		System.out.println("Before committing transaction");
+		tx.commit();
+		sessionFactory.close();
+		
+		System.out.println("Cart ID="+cart.getId());
+		System.out.println("Cart1 ID="+cart1.getId());
+		System.out.println("Item1 ID="+iphone.getId());
+		System.out.println("Item2 ID="+ipod.getId());
+		
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			if(sessionFactory != null && !sessionFactory.isClosed()) sessionFactory.close();
+		}
+		
+	}
+
+}
+
+

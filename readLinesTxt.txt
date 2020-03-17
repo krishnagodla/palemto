@@ -1,0 +1,56 @@
+while((line=br.readLine())){
+
+//Make sure the line is not null, not empty, and contains 3 comma char
+if (line != null && !line.equals("") && line.matches('.*[,].*[,].*[,].*')) {
+    String tmp[]=line.split(",");
+    date=tmp[0];
+    heure=tmp[1];
+    parametre=tmp[2];
+    valeur=tmp[3];
+
+// do the sql query
+
+} else {
+    // manage where the line doesn't fit the pattern
+}
+
+
+
+import java.io.*;
+import java.sql.*;
+import java.util.*;
+
+public class InsertFileData{
+public static void main(String[]args){
+try{
+Class.forName("com.mysql.jdbc.Driver");
+Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/register";, "root", "root");
+Statement st=con.createStatement();
+
+FileInputStream fstream = new FileInputStream("C:\\student.txt");
+DataInputStream in = new DataInputStream(fstream);
+BufferedReader br = new BufferedReader(new InputStreamReader(in));
+String strLine;
+ArrayList list=new ArrayList();
+while ((strLine = br.readLine()) != null){
+list.add(strLine);
+}
+Iterator itr;
+for (itr=list.iterator(); itr.hasNext(); ){
+String str=itr.next().toString();
+String [] splitSt =str.split(" ");
+String id="",name="",course="",deptt="";
+for (int i = 0 ; i < splitSt.length ; i++) {
+id=splitSt[0];
+name=splitSt[1];
+course=splitSt[2];
+deptt=splitSt[3];
+}
+
+int k=st.executeUpdate("insert into student(id,name,course,department) values('"+id+"','"+name+"','"+course+"','"+deptt+"')");
+
+}
+}
+catch(Exception e){}
+}
+}
